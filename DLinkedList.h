@@ -1,336 +1,191 @@
-// ============================================================================
-// Data Structures For Game Programmers
-// Ron Penton
-// DLinkedList.h
-// This is the Doubly-Linked List class
-// ============================================================================
 #ifndef DLINKEDLIST_H
 #define DLINKEDLIST_H
 
+template <typename Datatype> class DListNode;
+template <typename Datatype> class DLinkedList;
+template <typename Datatype> class DListIterator;
 
-
-
-// forward declarations of all the classes in this file
-template<class Datatype> class DListNode;
-template<class Datatype> class DLinkedList;
-template<class Datatype> class DListIterator;
-
-
-
-// -------------------------------------------------------
-// Name:        DListNode
-// Description: This is the Doubly-linked list node class.
-// -------------------------------------------------------
-template<class Datatype>
+template <typename Datatype>
 class DListNode
 {
 public:
+  Datatype m_data;
+  DListNode<Datatype> *m_next;
+  DListNode<Datatype> *m_previous;
 
+  void Delink()
+  {
+    if (m_previous != 0)
+      m_previous->m_next = m_next;
 
-// ----------------------------------------------------------------
-//  Name:           m_data
-//  Description:    This is the data in the node.
-// ----------------------------------------------------------------
-    Datatype m_data;
+    if (m_next != 0)
+      m_next->m_previous = m_previous;
+  }
 
-// ----------------------------------------------------------------
-//  Name:           m_next
-//  Description:    This is a pointer to the next node in the list
-// ----------------------------------------------------------------
-    DListNode<Datatype>* m_next;
+  void InsertAfter(Datatype p_data)
+  {
+    DListNode<Datatype> *newNode = new DListNode<Datatype>;
+    newNode->m_data= p_data;
 
-// ----------------------------------------------------------------
-//  Name:           m_previous
-//  Description:    This is a pointer to the last node in the list
-// ----------------------------------------------------------------
-    DListNode<Datatype>* m_previous;
+    newNode->m_next = m_next;
+    newNode->m_previous = this;
 
-
-// ----------------------------------------------------------------
-//  Name:           DeLink
-//  Description:    This delinks this node from the list it is in.
-//  Arguments:      None.
-//  Return Value:   None.
-// ----------------------------------------------------------------
-    void Delink()
+    if (m_next != 0)
     {
-        // if a previous node exists, then make the previous
-        // node point to the next node.
-        if( m_previous != 0 )
-            m_previous->m_next = m_next;
-
-        // if the next node exists, then make the next node
-        // point to the previous node.
-        if( m_next != 0 )
-            m_next->m_previous = m_previous;
+      m_next->m_previous = newNode;
     }
 
+    m_next = newNode;
+  }
 
-// ----------------------------------------------------------------
-//  Name:           InsertAfter
-//  Description:    This adds a node after the current node.
-//  Arguments:      p_data - The data to store in the new node.
-//  Return Value:   None.
-// ----------------------------------------------------------------
-    void InsertAfter( Datatype p_data )
+  void InsertBefore(Datatype p_data)
+  {
+    DListNode<Datatype> *newNode = new DListNode<Datatype>;
+    newNode->m_data = p_data;
+
+    newNode->m_next = this;
+    newNode->m_previous = m_previous;
+
+    if (m_previous != 0)
     {
-        // create the new node.
-        DListNode<Datatype>* newnode = new DListNode<Datatype>;
-        newnode->m_data = p_data;
-
-        // set up newnode's pointers.
-        newnode->m_next     = m_next;
-        newnode->m_previous = this;
-
-        // if there is a node after this one, make it point to
-        // newnode
-        if( m_next != 0 )
-            m_next->m_previous = newnode;
-
-        // make the current node point to newnode.
-        m_next = newnode;
+      m_previous->m_next = newNode;
     }
 
-
-// ----------------------------------------------------------------
-//  Name:           InsertBefore
-//  Description:    This adds a node before the current node.
-//  Arguments:      p_data - The data to store in the new node.
-//  Return Value:   None.
-// ----------------------------------------------------------------
-    void InsertBefore( Datatype p_data )
-    {
-        // create the new node.
-        DListNode<Datatype>* newnode = new DListNode<Datatype>;
-        newnode->m_data = p_data;
-
-        // set up newnode's pointers.
-        newnode->m_next     = this;
-        newnode->m_previous = m_previous;
-
-        // if there is a node before this one, make it point to
-        // newnode
-        if( m_previous != 0 )
-            m_previous->m_next = newnode;
-
-        // make the current node point to newnode.
-        m_previous = newnode;
-    }
-
-
+    m_previous = newNode;
+  }
 };
 
-
-
-// -------------------------------------------------------
-// Name:        DLinkedList
-// Description: This is the Doubly-linked list container.
-// -------------------------------------------------------
-template<class Datatype>
+template <typename Datatype>
 class DLinkedList
 {
 public:
+  DLinkedList()
+  {
+    m_head = 0;
+    m_tail = 0;
+    m_count = 0;
+  }
 
-// ----------------------------------------------------------------
-//  Name:           DLinkedList
-//  Description:    Constructor; creates an empty list
-//  Arguments:      None.
-//  Return Value:   None.
-// ----------------------------------------------------------------
-    DLinkedList()
-    {
-        m_head = 0;
-        m_tail = 0;
-        m_count = 0;
-    }
+  ~DLinkedList() 
+  {
+    DListNode<Datatype> *node = m_head;
+    DListNode<Datatype> *next;
 
-    
-// ----------------------------------------------------------------
-//  Name:           DLinkedList
-//  Description:    Destructor; destroys every node
-//  Arguments:      None.
-//  Return Value:   None.
-// ----------------------------------------------------------------
-    ~DLinkedList()
-    {
-        // temporary node pointers.
-        DListNode<Datatype>* node = m_head;
-        DListNode<Datatype>* next;
+    while (node != 0)
+      {
+        next = node->m_next;
+        delete node;
 
-        while( node != 0 )
-        {
-            // save the pointer to the next node.
-            next = node->m_next;
+        node = next;
+      }
+  }
 
-            // delete the current node.
-            delete node;
+  void Append(Datatype p_data)
+  {
+    if (m_head == 0)
+      {
+        m_head = m_tail = new DListNode<Datatype>;
+        m_head->m_data = p_data;
+        m_head->next = 0;
+        m_head->m_previous = 0;
+      }
+    else
+      {
+        m_tail->InsertAfter(p_data);
+        m_tail = m_tail->m_next;
+      }
+    m_count++;
+  }
 
-            // make the next node the current node.
-            node = next;
-        }
-    }
+  //Addes a new node to the beginning of a list
+  void Prepend(Datatype p_data)
+  {
+    if (m_head == 0)
+      {
+        m_head = m_tail = new DListNode<Datatype>;
+        m_head->m_data = p_data;
+        m_head->m_next = 0;
+        m_head->m_previous = 0;
+      }
+    else
+      {
+        //insert a new node before the head, and reset the head.
+        m_head->InsertBefore(p_data);
+        m_head =  m_head->m_previous;
+      }
+    m_count++;
+  }
 
+  void RemoveHead()
+  {
+    DListNode<Datatype> *node = 0;
+    if (m_head != 0)
+      {
+        node = m_head->m_next;
 
-// ----------------------------------------------------------------
-//  Name:           Append
-//  Description:    Adds a new node to the end of a list
-//  Arguments:      p_data - the data to be added.
-//  Return Value:   None.
-// ----------------------------------------------------------------
-    void Append( Datatype p_data )
-    {
-        // if there is no head node (ie: list is empty)
-        if( m_head == 0 )
-        {
-            // create a new head node.
-            m_head = m_tail = new DListNode<Datatype>;
-            m_head->m_data = p_data;
-            m_head->m_next = 0;
-            m_head->m_previous = 0;
-        }
+        delete m_head;
+        m_head = node;
+
+        //if the head is null, then we've just deleted the only node
+        //in the list. set the tail to 0. if not, set the previous
+        //pointer to -
+        if (m_head == 0)
+          {
+            m_tail = 0;
+          }
         else
-        {
-            // insert a new node after the tail, and reset the tail.
-            m_tail->InsertAfter( p_data );
+          {
+            m_head->m_previous = 0;
+          }
+        m_count--;
+      }
+  }
+
+  void RemoveTail()
+  {
+    DListNode<Datatype> *node = 0;
+    if (m_tail != 0)
+      {
+        node = m_tail->m_previous;
+
+        delete m_tail;
+        m_tail = node;
+
+        //if the tail is null, then we've just deleted the only node
+        //in the list.set the head to 0. if not , set the next pointer
+        //to 0.
+        if (m_tail == 0)
+          {
+            m_head = 0;
+          }
+        else
+          {
+            m_tail->m_next = 0;
+          }
+        m_count--;
+      }
+  }
+
+  void InsertAfter(DListIterator<Datatype> &p_iterator, Datatype p_data)
+  {
+    if (p_iterator.m_node != 0)
+      {
+        p_iterator.m_node->InsertAfter(p_data);
+
+        if (p_iterator.m_node == m_tail)
+          {
             m_tail = m_tail->m_next;
-        }
+          }
+
         m_count++;
-    }
+      }
+    else
+      {
+        Append(p_data);
+      }
+  }
 
-
-// ----------------------------------------------------------------
-//  Name:           Prepend
-//  Description:    Addss a new node to the beginning of a list
-//  Arguments:      p_data - the data to be added.
-//  Return Value:   None.
-// ----------------------------------------------------------------
-    void Prepend( Datatype p_data )
-    {
-        // if there is no head node (ie: list is empty)
-        if( m_head == 0 )
-        {
-            // create a new head node.
-            m_head = m_tail = new DListNode<Datatype>;
-            m_head->m_data = p_data;
-            m_head->m_next = 0;
-            m_head->m_previous = 0;
-        }
-        else
-        {
-            // insert a new node before the head, and reset the head.
-            m_head->InsertBefore( p_data );
-            m_head = m_head->m_previous;
-        }
-        m_count++;
-    }
-
-
-// ----------------------------------------------------------------
-//  Name:           RemoveHead
-//  Description:    This removes the very first node in the list.
-//  Arguments:      None.
-//  Return Value:   None.
-// ----------------------------------------------------------------
-    void RemoveHead()
-    {
-        DListNode<Datatype>* node = 0;
-
-        if( m_head != 0 )
-        {
-            // make node point to the next node.
-            node = m_head->m_next;
-
-            // then delete the head, and make the pointer
-            // point to node.
-            delete m_head;
-            m_head = node;
-
-            // if the head is null, then we've just deleted the only node
-            // in the list. set the tail to 0.
-            // if not, set the previous pointer to 0.
-            if( m_head == 0 )
-                m_tail = 0;
-            else
-                m_head->m_previous = 0;
-
-            m_count--;
-        }
-    }
-
-
-// ----------------------------------------------------------------
-//  Name:           RemoveTail
-//  Description:    This removes the very last node in the list.
-//  Arguments:      None.
-//  Return Value:   None.
-// ----------------------------------------------------------------
-    void RemoveTail()
-    {
-        DListNode<Datatype>* node = 0;
-
-        if( m_tail != 0 )
-        {
-            // make node point to the next node.
-            node = m_tail->m_previous;
-
-            // then delete the head, and make the pointer
-            // point to node.
-            delete m_tail;
-            m_tail = node;
-
-            // if the tail is null, then we've just deleted the only node
-            // in the list. set the head to 0.
-            // if not, set the next pointer to 0.
-            if( m_tail == 0 )
-                m_head = 0;
-            else
-                m_tail->m_next = 0;
-
-            m_count--;
-        }
-    }
-
-
-
-// ----------------------------------------------------------------
-//  Name:           InsertAfter
-//  Description:    Inserts data after the iterator, or at the end
-//                  of the list if iterator is invalid.
-//  Arguments:      p_iterator: The iterator to insert after
-//                  p_data: the data to insert
-//  Return Value:   None.
-// ----------------------------------------------------------------
-    void InsertAfter( DListIterator<Datatype>& p_iterator, Datatype p_data )
-    {
-        if( p_iterator.m_node != 0 )
-        {
-            // insert the data after the iterator
-            p_iterator.m_node->InsertAfter( p_data );
-
-            // if the iterator was the tail of the list,
-            // reset the tail pointer
-            if( p_iterator.m_node == m_tail )
-                m_tail = m_tail->m_next;
-
-            // increment the count
-            m_count++;
-        }
-        else
-        {
-            Append( p_data );
-        }
-    }
-
-
-// ----------------------------------------------------------------
-//  Name:           InsertBefore
-//  Description:    inserts data before the iterator, or prepends
-//                  it to the beginning of the list if invalid.
-//  Arguments:      p_iterator: The iterator to insert after
-//                  p_data: the data to insert
-//  Return Value:   None.
-// ----------------------------------------------------------------
-    void InsertBefore( DListIterator<Datatype>& p_iterator, Datatype p_data )
+  void InsertBefore( DListIterator<Datatype>& p_iterator, Datatype p_data )
     {
         if( p_iterator.m_node != 0 )
         {
@@ -352,13 +207,6 @@ public:
     }
 
 
-// ----------------------------------------------------------------
-//  Name:           Remove
-//  Description:    Removes the node that the iterator points to.
-//                  moves iterator forward to the next node.
-//  Arguments:      p_iterator: The iterator to remove
-//  Return Value:   None.
-// ----------------------------------------------------------------
     void Remove( DListIterator<Datatype>& p_iterator )
     {
         // temporary node pointer.
@@ -398,39 +246,16 @@ public:
         m_count--;
     }
 
-
-
-// ----------------------------------------------------------------
-//  Name:           GetIterator
-//  Description:    Gets an iterator pointing to the beginning
-//                  of the list.
-//  Arguments:      None.
-//  Return Value:   iterator pointing to the beginning of the list.
-// ----------------------------------------------------------------
     DListIterator<Datatype> GetIterator()
     {
         return DListIterator<Datatype>( this, m_head );
     }
 
-
-// ----------------------------------------------------------------
-//  Name:           Size
-//  Description:    Gets the size of the list
-//  Arguments:      None.
-//  Return Value:   size of the list.
-// ----------------------------------------------------------------
     int Size()
     {
         return m_count;
     }
 
-
-// ----------------------------------------------------------------
-//  Name:           SaveToDisk
-//  Description:    Saves the linked list to disk.
-//  Arguments:      p_filename: name of the file to save to.
-//  Return Value:   true, if successful
-// ----------------------------------------------------------------
     bool SaveToDisk( char* p_filename )
     {
         FILE* outfile = 0;
@@ -459,13 +284,6 @@ public:
         return true;
     }
 
-
-// ----------------------------------------------------------------
-//  Name:           ReadFromDisk
-//  Description:    Reads a linked list from a file.
-//  Arguments:      p_filename: the name of the file to read from
-//  Return Value:   true if successful.
-// ----------------------------------------------------------------
     bool ReadFromDisk( char* p_filename )
     {
         FILE* infile = 0;
@@ -497,33 +315,13 @@ public:
     }
 
 
-// ----------------------------------------------------------------
-//  Name:           m_head
-//  Description:    The first node in the list
-// ----------------------------------------------------------------
-    DListNode<Datatype>* m_head;
-
-// ----------------------------------------------------------------
-//  Name:           m_tail
-//  Description:    The last node in the list
-// ----------------------------------------------------------------
-    DListNode<Datatype>* m_tail;
-
-// ----------------------------------------------------------------
-//  Name:           m_count
-//  Description:    The number of nodes in the list
-// ----------------------------------------------------------------
-    int m_count;
+private:
+  DListNode<Datatype> *m_head;
+  DListNode<Datatype> *m_tail;
+  int m_count;
 };
 
 
-
-
-// -------------------------------------------------------
-// Name:        DListIterator
-// Description: This is the basic linked list 
-//              iterator class.
-// -------------------------------------------------------
 template<class Datatype>
 class DListIterator
 {
@@ -654,7 +452,5 @@ public:
 // ----------------------------------------------------------------
     DLinkedList<Datatype>* m_list;
 };
-
-
 
 #endif
