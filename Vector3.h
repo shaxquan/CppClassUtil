@@ -161,4 +161,15 @@ inline float distanceSquared(const Vector3 &a, const Vector3 &b) {
 	float dz = a.z - b.z;
 	return dx*dx + dy*dy + dz*dz;
 }
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Global variables
+//
+/////////////////////////////////////////////////////////////////////////////
+
+// We provide a global zero vector constant
+
+extern const Vector3 kZeroVector;
+
 #endif
