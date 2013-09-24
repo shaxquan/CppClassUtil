@@ -6,6 +6,8 @@
 class Vector3
 {
 public:
+    float x, y, z;
+
     Vector3() {}
 
     Vector3(const Vector3 &v) : x(v.x), y(v.y), z(v.z) {}
@@ -110,8 +112,6 @@ public:
     {
 		return x*a.x + y*a.y + z*a.z;
 	}
-private:
-    float x, y, z;
 };
 
 
